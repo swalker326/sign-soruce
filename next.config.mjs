@@ -21,5 +21,13 @@ const config = {
   experimental: {
     esmExternals: false, // THIS IS THE FLAG THAT MATTERS
   },
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "uploadthing.com",
+      },
+    ],
+  },
 };
 export default config;
