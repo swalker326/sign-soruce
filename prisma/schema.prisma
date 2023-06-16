@@ -1,0 +1,58 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+    provider        = "prisma-client-js"
+    previewFeatures = ["jsonProtocol"]
+}
+
+datasource db {
+    provider = "sqlite"
+    url      = env("DATABASE_URL")
+}
+
+model Word {
+    id            String   @id @default(cuid())
+    createdAt     DateTime @default(now())
+    updatedAt     DateTime @updatedAt
+    createdBy     String
+    word          String
+    definition    String
+    example       String?
+    pronunciation String
+    image         String
+    Sign          Sign[]
+}
+
+model Sign {
+    id              String      @id @default(cuid())
+    createdAt       DateTime    @default(now())
+    updatedAt       DateTime    @updatedAt
+    createdBy       String
+    word            Word        @relation(fields: [wordId], references: [id])
+    wordId          String
+    signDescription String
+    videos          SignVideo[]
+    images          SignImage[]
+}
+
+model SignVideo {
+    id        String   @id @default(cuid())
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+    createdBy String
+    url       String
+    gifUrl    String
+    Sign      Sign?    @relation(fields: [signId], references: [id])
+    signId    String?
+}
+
+model SignImage {
+    id        String   @id @default(cuid())
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+    createdBy String
+    url       String
+    Sign      Sign?    @relation(fields: [signId], references: [id])
+    signId    String?
+}
