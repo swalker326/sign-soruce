@@ -4,54 +4,60 @@
 generator client {
   provider = "prisma-client-js"
 }
+
 datasource db {
-  provider = "mysql"
-  url = env("DATABASE_URL")
+  provider     = "mysql"
+  url          = env("DATABASE_URL")
   relationMode = "prisma"
 }
 
 model Word {
-    id            String   @id @default(cuid())
-    createdAt     DateTime @default(now())
-    updatedAt     DateTime @updatedAt
-    createdBy     String
-    word          String
-    definition    String
-    example       String?
-    pronunciation String
-    image         String
-    Sign          Sign[]
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String
+
+  word          String
+  definition    String
+  example       String?
+  pronunciation String
+  image         String
+  Sign          Sign[]
 }
 
 model Sign {
-    id              String      @id @default(cuid())
-    createdAt       DateTime    @default(now())
-    updatedAt       DateTime    @updatedAt
-    createdBy       String
-    word            Word        @relation(fields: [wordId], references: [id])
-    wordId          String
-    signDescription String
-    videos          SignVideo[]
-    images          SignImage[]
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String
+
+  word            Word        @relation(fields: [wordId], references: [id])
+  wordId          String
+  signDescription String
+  videos          SignVideo[]
+  images          SignImage[]
 }
 
 model SignVideo {
-    id        String   @id @default(cuid())
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
-    createdBy String
-    url       String
-    gifUrl    String
-    Sign      Sign?    @relation(fields: [signId], references: [id])
-    signId    String?
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String
+
+  upvotes   Int
+  downvotes Int
+  url       String
+  gifUrl    String
+  Sign      Sign?   @relation(fields: [signId], references: [id])
+  signId    String?
 }
 
 model SignImage {
-    id        String   @id @default(cuid())
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
-    createdBy String
-    url       String
-    Sign      Sign?    @relation(fields: [signId], references: [id])
-    signId    String?
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String
+  url       String
+  Sign      Sign?    @relation(fields: [signId], references: [id])
+  signId    String?
 }
