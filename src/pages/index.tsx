@@ -1,5 +1,4 @@
 import { UserButton } from "@clerk/nextjs";
-import Head from "next/head";
 import { api } from "~/utils/api";
 import "@uploadthing/react/styles.css";
 import { Prisma } from "@prisma/client";
@@ -22,7 +21,7 @@ function SignCard({ sign }: { sign: SignWithWord }) {
             backgroundImage: `url(${sign.word.image})`,
           }}
         ></div>
-        <div className=" z-2 absolute h-full w-full rounded-lg bg-transparent px-2 py-4 hover:bg-purple-500 hover:bg-opacity-80 transition-all duration-300 ease-in-out">
+        <div className=" z-2 absolute h-full w-full rounded-lg bg-transparent px-2 py-4 transition-all duration-300 ease-in-out hover:bg-purple-500 hover:bg-opacity-80">
           <div className="flex items-center gap-2">
             <h2 className="text-2xl font-bold">{sign.word.word}</h2>
             <p>-</p>
@@ -39,13 +38,6 @@ export default function Home() {
   const { data } = api.sign.getAll.useQuery();
   return (
     <>
-      <Head>
-        <title>Sign Source</title>
-        <meta
-          name="description"
-          content="Sign Source is an open soruce/crowd source ASL dictionary"
-        />
-      </Head>
       <main className="container flex h-screen max-w-screen-2xl flex-col items-center ">
         <div className="flex h-28 w-full items-center justify-between bg-purple-500 px-6 py-2">
           <h1 className="text-5xl">Signing Source</h1>
