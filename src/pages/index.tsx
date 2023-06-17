@@ -1,8 +1,8 @@
-import { UserButton } from "@clerk/nextjs";
 import { api } from "~/utils/api";
 import "@uploadthing/react/styles.css";
 import { Prisma } from "@prisma/client";
 import Link from "next/link";
+import { PageLayout } from "~/components/layout";
 
 const signWithWord = Prisma.validator<Prisma.SignArgs>()({
   include: { word: true },
@@ -38,20 +38,14 @@ export default function Home() {
   const { data } = api.sign.getAll.useQuery();
   return (
     <>
-      <main className="container flex h-screen max-w-screen-2xl flex-col items-center ">
-        <div className="flex h-28 w-full items-center justify-between bg-purple-500 px-6 py-2">
-          <h1 className="text-5xl">Signing Source</h1>
-          <UserButton />
+      <PageLayout>
+        <div className="flex w-full flex-wrap gap-4 p-3">
+          {data &&
+            [...data, ...data, ...data, ...data, ...data].map((sign) => (
+              <SignCard key={sign.id} sign={sign} />
+            ))}
         </div>
-        <div className="max-w-screen container flex h-full flex-col items-center bg-gray-100">
-          <div className="flex w-full flex-wrap gap-4 p-3">
-            {data &&
-              [...data, ...data, ...data, ...data, ...data].map((sign) => (
-                <SignCard key={sign.id} sign={sign} />
-              ))}
-          </div>
-        </div>
-      </main>
+      </PageLayout>
     </>
   );
 }

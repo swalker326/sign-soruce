@@ -1,14 +1,12 @@
-import { type GetStaticProps, type NextPage } from "next";
+import type { GetStaticProps, NextPage } from "next";
 import Head from "next/head";
 import { api } from "~/utils/api";
 
 const SignPage: NextPage<{ signId: string }> = ({ signId }) => {
-  const { data, isLoading } = api.sign.getSignById.useQuery({
+  const { data } = api.sign.getSignById.useQuery({
     id: signId,
   });
-  if (isLoading) {
-    return <div>Loading...</div>;
-  }
+
   if (!data) {
     return <div>Sign not found</div>;
   }
@@ -21,9 +19,9 @@ const SignPage: NextPage<{ signId: string }> = ({ signId }) => {
           content="Sign Source is an open soruce/crowd source ASL dictionary"
         />
       </Head>
-      <main className="container flex h-screen max-w-screen-2xl flex-col items-center ">
+      <PageLayout>
         <div>{data.word.word}</div>
-      </main>
+      </PageLayout>
     </>
   );
 };
@@ -32,6 +30,7 @@ import { createServerSideHelpers } from "@trpc/react-query/server";
 import { appRouter } from "~/server/api/root";
 import { prisma } from "~/server/db";
 import superjson from "superjson";
+import { PageLayout } from "~/components/layout";
 
 export const getStaticProps: GetStaticProps = async (context) => {
   const ssg = createServerSideHelpers({
