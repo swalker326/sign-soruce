@@ -1,5 +1,6 @@
 import { signRouter } from "~/server/api/routers/sign";
 import { createTRPCRouter } from "~/server/api/trpc";
+import { wordRouter } from "./routers/word";
 
 /**
  * This is the primary router for your server.
@@ -8,6 +9,7 @@ import { createTRPCRouter } from "~/server/api/trpc";
  */
 export const appRouter = createTRPCRouter({
   sign: signRouter,
+  word: wordRouter,
 });
 
 // export type definition of API

@@ -9,7 +9,10 @@ export const PageLayout = (props: PropsWithChildren) => {
         <Link href="/">
           <h1 className="text-5xl">Signing Source</h1>
         </Link>
-        <UserButton />
+        <div>
+          <Link href={"/sign/create"}>Create</Link>
+          <UserButton />
+        </div>
       </div>
       <div className="max-w-screen container flex h-full flex-col items-center bg-gray-100">
         {props.children}

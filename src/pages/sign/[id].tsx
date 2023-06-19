@@ -20,7 +20,12 @@ const SignPage: NextPage<{ signId: string }> = ({ signId }) => {
         />
       </Head>
       <PageLayout>
-        <div>{data.word.word}</div>
+        {data && (
+          <div>
+            <div>{data.word.word}</div>
+            <video src={data.videos[0]?.url} controls loop autoPlay muted />
+          </div>
+        )}
       </PageLayout>
     </>
   );

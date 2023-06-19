@@ -5,7 +5,7 @@ import Link from "next/link";
 import { PageLayout } from "~/components/layout";
 
 const signWithWord = Prisma.validator<Prisma.SignArgs>()({
-  include: { word: true },
+  include: { word: { include: { image: true } } },
 });
 
 type SignWithWord = Prisma.SignGetPayload<typeof signWithWord>;
@@ -18,7 +18,7 @@ function SignCard({ sign }: { sign: SignWithWord }) {
           className="absolute h-full w-full rounded-lg bg-cover bg-center opacity-40 transition-all duration-500 "
           style={{
             zIndex: 0,
-            backgroundImage: `url(${sign.word.image})`,
+            backgroundImage: `url(${sign.word?.image?.url || ""})`,
           }}
         ></div>
         <div className=" z-2 absolute h-full w-full rounded-lg bg-transparent px-2 py-4 transition-all duration-300 ease-in-out hover:bg-purple-500 hover:bg-opacity-80">
@@ -35,7 +35,7 @@ function SignCard({ sign }: { sign: SignWithWord }) {
 }
 
 export default function Home() {
-  const { data } = api.sign.getAll.useQuery();
+  const { data } = api.sign.getSigns.useQuery();
   return (
     <>
       <PageLayout>
