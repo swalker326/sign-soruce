@@ -4,13 +4,16 @@ import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 
 export const wordRouter = createTRPCRouter({
   getAll: publicProcedure.query(({ ctx }) => {
-    return ctx.prisma.word.findMany({});
+    return ctx.prisma.word.findMany({
+      include: { Signs: { include: { videos: true } } },
+    });
   }),
   getWordById: publicProcedure
     .input(z.object({ id: z.string() }))
     .query(async ({ input, ctx }) => {
       const sign = await ctx.prisma.word.findUnique({
         where: { id: input.id },
+        include: { Signs: { include: { videos: true } } },
       });
       if (!sign) {
         throw new TRPCError({ code: "NOT_FOUND", message: "Word Not Found" });
