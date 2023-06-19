@@ -2,7 +2,8 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["fullTextSearch", "fullTextIndex"]
 }
 
 datasource db {
@@ -21,8 +22,11 @@ model Word {
   definition    String
   example       String?
   pronunciation String
-  image         String
+  image         WordImage?
   Sign          Sign[]
+  wordImageId   String?
+
+  @@fulltext([word])
 }
 
 model Sign {
@@ -33,9 +37,10 @@ model Sign {
 
   word            Word        @relation(fields: [wordId], references: [id])
   wordId          String
-  signDescription String
+  signDescription String?
   videos          SignVideo[]
-  images          SignImage[]
+
+  @@fulltext([wordId])
 }
 
 model SignVideo {
@@ -44,12 +49,13 @@ model SignVideo {
   updatedAt DateTime @updatedAt
   createdBy String
 
-  upvotes   Int
-  downvotes Int
+  upvotes   Int?    @default(0)
+  downvotes Int?    @default(0)
   url       String
-  gifUrl    String
   Sign      Sign?   @relation(fields: [signId], references: [id])
   signId    String?
+
+  @@index([signId])
 }
 
 model SignImage {
@@ -58,6 +64,18 @@ model SignImage {
   updatedAt DateTime @updatedAt
   createdBy String
   url       String
-  Sign      Sign?    @relation(fields: [signId], references: [id])
+  // Sign      Sign?    @relation(fields: [signId], references: [id])
   signId    String?
+
+  @@index([signId])
+}
+
+model WordImage {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String
+  url       String
+  Word      Word?    @relation(fields: [wordId], references: [id])
+  wordId    String?  @unique
 }
