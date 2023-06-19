@@ -31,7 +31,7 @@ export function WordSelector({
           <div className="relative w-full cursor-default rounded-lg bg-white text-left focus:outline-none focus-visible:ring-2  focus-visible:ring-offset-2 focus-visible:ring-offset-purple-300 sm:text-sm">
             <Combobox.Input
               placeholder="Search for a Word"
-              className="w-full rounded-lg border-none py-2 pl-3 pr-10 text-sm leading-5 text-gray-900 focus:border focus:shadow-[0_0_0_1.5px_rgb(168,85,247)] focus:outline-none"
+              className="w-full rounded-lg border-none py-2 pl-3 pr-10 text-sm leading-5 text-gray-900 focus:shadow-[0_0_0_1.5px_rgb(168,85,247)] focus:outline-none"
               displayValue={(option: (typeof options)[number]) => {
                 return option?.label || "Select a Word";
               }}

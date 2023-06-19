@@ -40,10 +40,7 @@ export default function Home() {
     <>
       <PageLayout>
         <div className="flex w-full flex-wrap gap-4 p-3">
-          {data &&
-            [...data, ...data, ...data, ...data, ...data].map((sign) => (
-              <SignCard key={sign.id} sign={sign} />
-            ))}
+          {data && data.map((sign) => <SignCard key={sign.id} sign={sign} />)}
         </div>
       </PageLayout>
     </>

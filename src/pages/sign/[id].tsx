@@ -16,13 +16,13 @@ const SignPage: NextPage<{ signId: string }> = ({ signId }) => {
         <title>Sign Source - {data.word.word}</title>
         <meta
           name="description"
-          content="Sign Source is an open soruce/crowd source ASL dictionary"
+          content="Sign Source is an open soruce, crowd sourced ASL dictionary"
         />
       </Head>
       <PageLayout>
         {data && (
           <div>
-            <div>{data.word.word}</div>
+            <h1>{data.word.word}</h1>
             <video src={data.videos[0]?.url} controls loop autoPlay muted />
           </div>
         )}

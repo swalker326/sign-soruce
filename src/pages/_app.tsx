@@ -3,6 +3,7 @@ import type { AppProps } from "next/app";
 import { api } from "~/utils/api";
 import "~/styles/globals.css";
 import Head from "next/head";
+import { Toaster } from "react-hot-toast";
 
 function MyApp({ Component, pageProps }: AppProps) {
   return (
@@ -14,6 +15,7 @@ function MyApp({ Component, pageProps }: AppProps) {
           content="Sign Source is an open soruce/crowd source ASL dictionary"
         />
       </Head>
+      <Toaster />
       <Component {...pageProps} />
     </ClerkProvider>
   );
