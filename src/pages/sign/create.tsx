@@ -7,13 +7,24 @@ import { WordSelector } from "~/components/Words/WordSelector";
 import { useClerk } from "@clerk/nextjs";
 import { api } from "~/utils/api";
 import { toast } from "react-hot-toast";
+import { useRouter } from "next/router";
 
 const CreateWordPage = () => {
   const [videoUrl, setVideoUrl] = useState<string | undefined>();
-  const [selectedWord, setSelectedWord] = useState<{
-    id: string;
-    label: string;
-  }>();
+  const {
+    query: { wordid },
+  } = useRouter();
+  const { data } = api.word.getWordById.useQuery({
+    id: (wordid as string) || "",
+  });
+  const [selectedWord, setSelectedWord] = useState<
+    | {
+        id: string;
+        label: string;
+      }
+    | undefined
+  >({ id: (wordid as string) || "", label: data?.word || "" });
+
   const { user } = useClerk();
   const [signDescription, setSignDescription] = useState<string>("");
   const { mutate: signCreateMutation, isLoading: isCreatingSign } =
@@ -26,7 +37,7 @@ const CreateWordPage = () => {
           position: "bottom-right",
           duration: 5000,
         });
-        setSelectedWord(undefined);
+        setSelectedWord({ id: "", label: "" });
         setSignDescription("");
         setVideoUrl(undefined);
       },
