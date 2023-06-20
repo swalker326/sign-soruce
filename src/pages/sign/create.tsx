@@ -8,6 +8,7 @@ import { useClerk } from "@clerk/nextjs";
 import { api } from "~/utils/api";
 import { toast } from "react-hot-toast";
 import { useRouter } from "next/router";
+import VideoRecorder from "~/components/Video/VideoRecorder";
 
 const CreateWordPage = () => {
   const [videoUrl, setVideoUrl] = useState<string | undefined>();
@@ -79,6 +80,7 @@ const CreateWordPage = () => {
             createSign();
           }}
         >
+          <VideoRecorder />
           <div className="flex w-1/2 flex-col gap-3">
             <WordSelector
               selected={selectedWord}
@@ -97,26 +99,28 @@ const CreateWordPage = () => {
             {videoUrl ? (
               <video src={videoUrl} controls loop />
             ) : (
-              <UploadDropzone<OurFileRouter>
-                endpoint="videoUploader"
-                onClientUploadComplete={(res) => {
-                  // Do something with the response
-                  if (res && res.length > 0) {
-                    const videoUrl = res[0]?.fileUrl;
-                    if (!videoUrl || !user?.id) {
-                      throw new Error("No video url");
+              <>
+                <UploadDropzone<OurFileRouter>
+                  endpoint="videoUploader"
+                  onClientUploadComplete={(res) => {
+                    // Do something with the response
+                    if (res && res.length > 0) {
+                      const videoUrl = res[0]?.fileUrl;
+                      if (!videoUrl || !user?.id) {
+                        throw new Error("No video url");
+                      }
+                      setVideoUrl(videoUrl);
+                      signVideoMutation({
+                        url: videoUrl,
+                        createdBy: user?.id,
+                      });
                     }
-                    setVideoUrl(videoUrl);
-                    signVideoMutation({
-                      url: videoUrl,
-                      createdBy: user?.id,
-                    });
-                  }
-                }}
-                onUploadError={(error: Error) => {
-                  alert(`ERROR! ${error.message}`);
-                }}
-              />
+                  }}
+                  onUploadError={(error: Error) => {
+                    alert(`ERROR! ${error.message}`);
+                  }}
+                />
+              </>
             )}
           </div>
           <button
