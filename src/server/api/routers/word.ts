@@ -13,7 +13,7 @@ export const wordRouter = createTRPCRouter({
     .query(async ({ input, ctx }) => {
       const sign = await ctx.prisma.word.findUnique({
         where: { id: input.id },
-        include: { Signs: { include: { videos: true } } },
+        include: { images: true, Signs: { include: { videos: true } } },
       });
       if (!sign) {
         throw new TRPCError({ code: "NOT_FOUND", message: "Word Not Found" });
@@ -26,6 +26,20 @@ export const wordRouter = createTRPCRouter({
       const { word } = input;
       return ctx.prisma.word.findMany({
         where: { word: { startsWith: word } },
+      });
+    }),
+  addWordImage: publicProcedure
+    .input(
+      z.object({ wordId: z.string(), createdBy: z.string(), url: z.string() })
+    )
+    .mutation(({ ctx, input }) => {
+      const { wordId, createdBy, url } = input;
+      return ctx.prisma.wordImage.create({
+        data: {
+          url,
+          createdBy,
+          wordId,
+        },
       });
     }),
 });

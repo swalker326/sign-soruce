@@ -12,7 +12,7 @@ export const signRouter = createTRPCRouter({
     }),
   getSigns: publicProcedure.query(({ ctx }) => {
     return ctx.prisma.sign.findMany({
-      include: { word: { include: { image: true } } },
+      include: { word: { include: { images: true } } },
     });
   }),
   getOptionSigns: publicProcedure

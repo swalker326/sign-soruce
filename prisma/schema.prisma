@@ -22,9 +22,8 @@ model Word {
   definition    String
   example       String?
   pronunciation String
-  image         WordImage?
+  images        WordImage[]
   Signs         Sign[]
-  wordImageId   String?
 
   @@fulltext([word])
 }

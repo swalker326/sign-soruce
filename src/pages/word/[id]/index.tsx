@@ -15,6 +15,7 @@ import {
 import Link from "next/link";
 import { Menu, Transition } from "@headlessui/react";
 import { Fragment } from "react";
+import Image from "next/image";
 
 const SignPage: NextPage<{ wordId: string }> = ({ wordId }) => {
   const { data } = api.word.getWordById.useQuery({
@@ -109,6 +110,16 @@ const SignPage: NextPage<{ wordId: string }> = ({ wordId }) => {
               </Menu>
             </div>
             <p>{data.definition}</p>
+            {data.images && (
+              <div>
+                <Image
+                  src={data.images[0]?.url || ""}
+                  height={300}
+                  width={300}
+                  alt={`sing image for ${data.word}`}
+                />{" "}
+              </div>
+            )}
             {data.Signs.map((sign) => (
               <video
                 key={sign.id}
