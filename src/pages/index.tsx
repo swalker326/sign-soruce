@@ -3,6 +3,15 @@ import "@uploadthing/react/styles.css";
 import { Prisma } from "@prisma/client";
 import Link from "next/link";
 import { PageLayout } from "~/components/layout";
+import { Button } from "~/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "~/components/ui/card";
+import { MoreHorizontalIcon } from "lucide-react";
 
 const wordWithSigns = Prisma.validator<Prisma.WordArgs>()({
   include: { Signs: { include: { videos: true } } },
@@ -13,7 +22,25 @@ type WordWithSign = Prisma.WordGetPayload<typeof wordWithSigns>;
 function WordCard({ word }: { word: WordWithSign }) {
   return (
     <div className="relative flex h-60 w-72 flex-col rounded-lg bg-transparent">
-      <Link href={`/word/${word.id}`}>
+      <Card>
+        <CardHeader className="bg-purple-300">
+          <CardTitle>{word.word}</CardTitle>
+          <CardDescription>{word.pronunciation}</CardDescription>
+        </CardHeader>
+        <CardContent className="relative">
+          <div className="flex flex-col pt-3">
+            {word.Signs.length > 0 ? (
+              <video src={word.Signs[0]?.videos[0]?.url} loop muted autoPlay />
+            ) : (
+              <p>{word.definition}</p>
+            )}
+            <Link href={`/word/${word.id}`}>
+              <MoreHorizontalIcon className="absolute bottom-2 right-2" />
+            </Link>
+          </div>
+        </CardContent>
+      </Card>
+      {/* <Link href={`/word/${word.id}`}>
         <div
           className="absolute h-full w-full rounded-lg bg-cover bg-center opacity-40 transition-all duration-500 "
           style={{
@@ -29,7 +56,7 @@ function WordCard({ word }: { word: WordWithSign }) {
           </div>
           <p>{word.definition}</p>
         </div>
-      </Link>
+      </Link> */}
     </div>
   );
 }

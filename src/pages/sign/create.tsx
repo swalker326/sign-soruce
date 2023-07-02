@@ -2,14 +2,21 @@ import { UploadDropzone } from "@uploadthing/react";
 import { PageLayout } from "~/components/layout";
 import "@uploadthing/react/styles.css";
 import type { OurFileRouter } from "~/server/uploadthing/router";
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import { WordSelector } from "~/components/Words/WordSelector";
 import { useClerk } from "@clerk/nextjs";
 import { api } from "~/utils/api";
 import { toast } from "react-hot-toast";
 import { useRouter } from "next/router";
 import VideoRecorder from "~/components/Video/VideoRecorder";
-import { Controller, useForm } from "react-hook-form";
+import { Controller, type SubmitHandler, useForm } from "react-hook-form";
+import { DevTool } from "@hookform/devtools";
+
+export type CreateFormInputs = {
+  description: string;
+  videoUrl: string;
+  word: string;
+};
 
 const CreateWordPage = () => {
   const [videoUrl, setVideoUrl] = useState<string | undefined>();
@@ -28,7 +35,7 @@ const CreateWordPage = () => {
   } = useForm({
     defaultValues: {
       description: "",
-      video: "",
+      videoUrl: "",
       word: (wordid as string) || "",
     },
   });
@@ -41,7 +48,6 @@ const CreateWordPage = () => {
   >({ id: (wordid as string) || "", label: data?.word || "" });
 
   const { user } = useClerk();
-  const [signDescription, setSignDescription] = useState<string>("");
   const { mutate: signCreateMutation, isLoading: isCreatingSign } =
     api.sign.create.useMutation({
       onSuccess: () => {
@@ -53,7 +59,6 @@ const CreateWordPage = () => {
           duration: 5000,
         });
         setSelectedWord({ id: "", label: "" });
-        setSignDescription("");
         setVideoUrl(undefined);
       },
       onError: (error) => {
@@ -64,26 +69,13 @@ const CreateWordPage = () => {
   const { data: signVideoData, mutate: signVideoMutation } =
     api.sign.createSignVideo.useMutation();
 
-  const createSign = (values: {
-    description: string;
-    video: string;
-    word: string;
-  }) => {
-    if (!values.video) {
-      throw new Error("No sign video id");
-    }
+  const createSign: SubmitHandler<CreateFormInputs> = (values) => {
+    console.log("Sign Video Data: ", signVideoData);
     if (!user?.id) {
       throw new Error("No user id");
     }
-    if (!values.description) {
-      throw new Error("No sign description");
-    }
-    if (!values.word) {
-      throw new Error("No selected word id");
-    }
-    console.log("Sign Video Data: ", signVideoData);
     signCreateMutation({
-      videoId: values.video,
+      videoUrl: values.videoUrl,
       createdBy: user?.id,
       wordId: values.word,
       signDescription: values.description,
@@ -94,6 +86,7 @@ const CreateWordPage = () => {
 
   return (
     <PageLayout>
+      <DevTool control={control} />
       <div className="w-full px-4">
         <h1 className="text-2xl">Create a Sign</h1>
         <form
@@ -114,6 +107,7 @@ const CreateWordPage = () => {
                   {...field}
                   selected={selectedWord}
                   setSelected={setSelectedWord}
+                  control={control}
                 />
               )}
             />
@@ -147,30 +141,38 @@ const CreateWordPage = () => {
             {videoUrl ? (
               <video src={videoUrl} controls loop />
             ) : videoSource === "upload" ? (
-              <>
-                <UploadDropzone<OurFileRouter>
-                  // {...register("video", { required: "Please upload a video" })}
-                  endpoint="videoUploader"
-                  onClientUploadComplete={(res) => {
-                    // Do something with the response
-                    if (res && res.length > 0) {
-                      const videoUrl = res[0]?.fileUrl;
-                      if (!videoUrl || !user?.id) {
-                        throw new Error("No video url");
-                      }
-                      setVideoUrl(videoUrl);
-                      signVideoMutation({
-                        url: videoUrl,
-                        createdBy: user?.id,
-                      });
-                    }
-                  }}
-                  onUploadError={(error: Error) => {
-                    toast.error(error.message);
-                  }}
+              <Fragment>
+                <Controller
+                  name="videoUrl"
+                  control={control}
+                  rules={{ required: "Please upload a video" }}
+                  render={({ field }) => (
+                    <UploadDropzone<OurFileRouter>
+                      {...field}
+                      endpoint="videoUploader"
+                      onClientUploadComplete={(res) => {
+                        // Do something with the response
+                        if (res && res.length > 0) {
+                          const videoUrl = res[0]?.fileUrl;
+                          if (!videoUrl || !user?.id) {
+                            throw new Error("No video url");
+                          }
+                          // signVideoMutation({
+                          //   url: videoUrl,
+                          //   createdBy: user?.id,
+                          // });
+                          setVideoUrl(videoUrl);
+                          field.onChange(videoUrl);
+                        }
+                      }}
+                      onUploadError={(error: Error) => {
+                        toast.error(error.message);
+                      }}
+                    />
+                  )}
                 />
-                <p className="text-red-500">{errors.video?.message}</p>
-              </>
+                <p className="text-red-500">{errors.videoUrl?.message}</p>
+              </Fragment>
             ) : (
               <VideoRecorder onVideoUpload={setVideoUrl} />
             )}

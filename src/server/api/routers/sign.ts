@@ -60,17 +60,24 @@ export const signRouter = createTRPCRouter({
         wordId: z.string(),
         createdBy: z.string(),
         signDescription: z.string(),
-        videoId: z.string(),
+        videoUrl: z.string(),
       })
     )
     .mutation(async ({ ctx, input }) => {
       const sign = await ctx.prisma.sign.create({
         data: {
           createdBy: input.createdBy,
-          wordId: input.wordId,
           signDescription: input.signDescription || "",
           videos: {
-            connect: { id: input.videoId },
+            create: {
+              url: input.videoUrl,
+              upvotes: 0,
+              downvotes: 0,
+              createdBy: input.createdBy,
+            },
+          },
+          word: {
+            connect: { id: input.wordId },
           },
         },
       });
