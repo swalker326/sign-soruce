@@ -3,13 +3,8 @@ import { api } from "~/utils/api";
 import { useDebounce } from "~/utils/useDebounce";
 import { Combobox, Transition } from "@headlessui/react";
 import { CheckIcon, ChevronUpDownIcon } from "@heroicons/react/20/solid";
-import {
-  type Control,
-  useController,
-  type Path,
-  Controller,
-} from "react-hook-form";
-import { CreateFormInputs } from "~/pages/sign/create";
+import { type Control, Controller } from "react-hook-form";
+import type { CreateFormInputs } from "~/pages/sign/create";
 
 export function WordSelector({
   selected,

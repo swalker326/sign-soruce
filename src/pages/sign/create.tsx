@@ -66,11 +66,7 @@ const CreateWordPage = () => {
       },
     });
 
-  const { data: signVideoData, mutate: signVideoMutation } =
-    api.sign.createSignVideo.useMutation();
-
   const createSign: SubmitHandler<CreateFormInputs> = (values) => {
-    console.log("Sign Video Data: ", signVideoData);
     if (!user?.id) {
       throw new Error("No user id");
     }

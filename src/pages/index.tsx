@@ -3,7 +3,6 @@ import "@uploadthing/react/styles.css";
 import { Prisma } from "@prisma/client";
 import Link from "next/link";
 import { PageLayout } from "~/components/layout";
-import { Button } from "~/components/ui/button";
 import {
   Card,
   CardContent,
