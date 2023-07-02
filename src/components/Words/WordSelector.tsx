@@ -3,15 +3,20 @@ import { api } from "~/utils/api";
 import { useDebounce } from "~/utils/useDebounce";
 import { Combobox, Transition } from "@headlessui/react";
 import { CheckIcon, ChevronUpDownIcon } from "@heroicons/react/20/solid";
+import { type Control, useController, type Path } from "react-hook-form";
 
 export function WordSelector({
   selected,
   setSelected,
+  // control,
+  // name,
 }: {
   selected: { id: string; label: string } | undefined;
   setSelected: Dispatch<
     SetStateAction<{ id: string; label: string } | undefined>
   >;
+  // name: Path<{ description: string; video: string; word: string }>;
+  // control: Control<{ description: string; video: string; word: string }>;
 }) {
   const [searchWord, setSearchWord] = useState("");
   // const [selected, setSelected] = useState<(typeof options)[number]>();

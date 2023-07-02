@@ -1,27 +1,50 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
+import { useClerk } from "@clerk/nextjs";
+import { StopCircleIcon } from "@heroicons/react/20/solid";
 import {
-  StopCircleIcon,
-  VideoCameraIcon,
-  ViewfinderCircleIcon,
-} from "@heroicons/react/20/solid";
-import { useState, useRef, useEffect, useCallback } from "react";
-import { toast } from "react-hot-toast";
-import { useLocalStorage } from "~/hooks/UseLocalStorage";
+  useState,
+  useRef,
+  useEffect,
+  useCallback,
+  type SetStateAction,
+  type Dispatch,
+} from "react";
+import { LoaderIcon, toast } from "react-hot-toast";
+// import { useLocalStorage } from "~/hooks/UseLocalStorage";
+import { api } from "~/utils/api";
+import { useUploadThing } from "~/utils/uploadThing";
+
 const mimeType = "video/webm;codecs=vp9";
-const VideoRecorder = () => {
+
+type VideoRecorderProps = {
+  onVideoUpload: Dispatch<SetStateAction<string | undefined>>;
+};
+
+const VideoRecorder = ({ onVideoUpload }: VideoRecorderProps) => {
   const [permission, setPermission] = useState(false);
+  const { user } = useClerk();
+  const [previwingVideo, setPreviewingVideo] = useState<boolean>(false);
+  const [videoUploading, setVideoUploading] = useState<boolean>(false);
+  const [videoBlob, setVideoBlob] = useState<Blob | null>();
   const mediaRecorder = useRef<MediaRecorder>();
   const liveVideoFeed = useRef<HTMLVideoElement>(null);
   const [recordingStatus, setRecordingStatus] = useState<
     "not-recording" | "recording"
   >("not-recording");
   const [stream, setStream] = useState<MediaStream>();
-  const [videoChunks, setVideoChunks] = useState<any[]>([]);
   const [recordedVideo, setRecordedVideo] = useState<string | null>();
-  const [permissionChecked, setPermissionChecked] = useLocalStorage(
-    "camera-permission-checked",
-    false
-  );
+
+  const { mutate: signVideoMutation } = api.sign.createSignVideo.useMutation();
+
+  const { startUpload } = useUploadThing({
+    endpoint: "videoUploader",
+    onClientUploadComplete: () => {
+      alert("uploaded successfully!");
+    },
+    onUploadError: () => {
+      alert("error occurred while uploading");
+    },
+  });
 
   const getCameraPermission = useCallback(async () => {
     setRecordedVideo(null);
@@ -54,13 +77,10 @@ const VideoRecorder = () => {
         //type narrow my error
         if (err instanceof DOMException) {
           if (err.name === "NotAllowedError") {
-            if (!permissionChecked) {
-              setPermissionChecked(true);
-              toast.error("Camera Permission Denied", {
-                position: "bottom-right",
-                duration: 5000,
-              });
-            }
+            toast.error("Camera Permission Denied", {
+              position: "bottom-right",
+              duration: 5000,
+            });
           }
         }
       }
@@ -70,87 +90,127 @@ const VideoRecorder = () => {
         duration: 5000,
       });
     }
-  }, [permissionChecked]);
-  useEffect(() => {
-    getCameraPermission().catch((err) => {
-      console.log(err);
-    });
-  }, [getCameraPermission]);
-  // eslint-disable-next-line @typescript-eslint/require-await
-  const startRecording = async () => {
-    setRecordingStatus("recording");
+  }, []);
+
+  const startRecording = useCallback(() => {
     if (!stream) {
       throw new Error("No stream");
     }
+
+    setRecordingStatus("recording");
+
     const media = new MediaRecorder(stream, { mimeType });
     mediaRecorder.current = media;
-    mediaRecorder.current.start();
-    const localVideoChunks: any[] = [];
-    mediaRecorder.current.ondataavailable = (event) => {
-      if (typeof event.data === "undefined") return;
-      if (event.data.size === 0) return;
-      localVideoChunks.push(event.data);
-    };
-    setVideoChunks(localVideoChunks);
-  };
 
-  const stopRecording = () => {
+    const localVideoChunks: Blob[] = [];
+
+    mediaRecorder.current.ondataavailable = (event) => {
+      if (event.data && event.data.size > 0) {
+        localVideoChunks.push(event.data);
+      }
+    };
+
+    mediaRecorder.current.onstop = () => {
+      const videoBlob = new Blob(localVideoChunks, { type: mimeType });
+      const videoUrl = URL.createObjectURL(videoBlob);
+      console.log("V_URL", videoUrl);
+      setRecordedVideo(videoUrl);
+      setVideoBlob(videoBlob);
+    };
+
+    mediaRecorder.current.start();
+  }, [stream]);
+
+  const stopRecording = useCallback(() => {
     if (!mediaRecorder.current) {
       throw new Error("No media recorder");
     }
-    setPermission(false);
+    console.log("STOPPING RECORDING");
     setRecordingStatus("not-recording");
     mediaRecorder.current.stop();
-    mediaRecorder.current.onstop = () => {
-      const videoBlob = new Blob(videoChunks, { type: mimeType });
-      const videoUrl = URL.createObjectURL(videoBlob);
-      setRecordedVideo(videoUrl);
-      setVideoChunks([]);
-    };
-  };
+  }, []);
+
+  useEffect(() => {
+    getCameraPermission().catch((err) => {
+      console.error(err);
+      toast.error("Camera Permission Denied", {
+        position: "bottom-right",
+        duration: 5000,
+      });
+    });
+  }, [getCameraPermission]);
+
+  const uploadFile = useCallback(
+    async (blob: Blob) => {
+      setVideoUploading(true);
+      const videoFile = new File([blob], "recordedVideo.webm", {
+        type: mimeType,
+      });
+      const res = await startUpload([videoFile]);
+      if (res && res.length > 0) {
+        const videoUrl = res[0]?.fileUrl;
+        if (!videoUrl || !user?.id) {
+          throw new Error("No video url");
+        }
+        signVideoMutation({
+          url: videoUrl,
+          createdBy: user?.id,
+        });
+        if (onVideoUpload) {
+          onVideoUpload(videoUrl);
+        }
+        setVideoUploading(false);
+      }
+    },
+    [onVideoUpload, signVideoMutation, startUpload, user?.id]
+  );
 
   return (
     <div>
-      <button
-        className=" flex items-center gap-0.5 rounded-md bg-purple-500 px-4 py-2 text-white"
-        onClick={getCameraPermission}
-      >
-        <VideoCameraIcon className="mr-2 h-5 w-5" />
-        Record Video
-      </button>
       <main>
-        <div className="relative flex w-1/2 border border-red-500">
+        {/* {!videoBlob ? ( */}
+        <div className="relative flex w-1/2 border-purple-200 ">
           <div className="absolute bottom-0 z-10 flex w-full justify-center gap-3">
             {permission && recordingStatus === "not-recording" ? (
               <button
-                className="flex items-center rounded-md bg-red-500 px-4 py-2  text-white"
+                className="mb-1 flex items-center rounded-md bg-red-500 px-4 py-2 text-white"
                 onClick={startRecording}
               >
-                <ViewfinderCircleIcon className="h-5 w-5" />
+                Record
               </button>
             ) : null}
 
-            <button
-              className=" flex items-center rounded-md bg-red-500 px-4 py-2  text-white"
-              onClick={stopRecording}
-            >
-              <StopCircleIcon className="h-5 w-5" />
-            </button>
+            {permission && recordingStatus === "recording" && (
+              <button
+                className=" mb-1 flex items-center rounded-md bg-red-500 px-4 py-2  text-white"
+                onClick={stopRecording}
+              >
+                <StopCircleIcon className="h-5 w-5" />
+              </button>
+            )}
           </div>
           <video className="w-full" src="" ref={liveVideoFeed} autoPlay muted />
         </div>
+        {/* ) : ( */}
         {recordedVideo && (
-          <div className="relative flex w-1/2 border border-red-500">
-            <div className="absolute flex w-full justify-end z-10">
-              <a
-                download
-                className="flex items-center rounded-md bg-purple-500 px-4 py-2  text-white"
-                href={recordedVideo || ""}
-              >
-                Download
-              </a>
-            </div>
+          <div className="relative flex w-full border border-red-500">
             <video className="w-full" src={recordedVideo} controls />
+          </div>
+        )}
+        {videoBlob && (
+          <div className="flex gap-1">
+            <button
+              className="border-1.5 mt-2 rounded-lg border border-purple-500 px-3 py-1 text-slate-700 hover:border-purple-700 hover:bg-purple-100 focus:outline-none"
+              onClick={() => uploadFile(videoBlob)}
+            >
+              {videoUploading ? <LoaderIcon /> : "Use Video"}
+            </button>
+            <button
+              className="border-1.5 mt-2 rounded-lg border border-purple-500 px-3 py-1 text-slate-700 hover:border-purple-700 hover:bg-purple-100 focus:outline-none"
+              onClick={() => setVideoBlob(null)}
+            >
+              Record Again
+            </button>
           </div>
         )}
       </main>

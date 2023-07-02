@@ -9,14 +9,28 @@ import { api } from "~/utils/api";
 import { toast } from "react-hot-toast";
 import { useRouter } from "next/router";
 import VideoRecorder from "~/components/Video/VideoRecorder";
+import { Controller, useForm } from "react-hook-form";
 
 const CreateWordPage = () => {
   const [videoUrl, setVideoUrl] = useState<string | undefined>();
+  const [videoSource, setVideoSource] = useState<"upload" | "record">("upload");
   const {
     query: { wordid },
   } = useRouter();
   const { data } = api.word.getWordById.useQuery({
     id: (wordid as string) || "",
+  });
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    control,
+  } = useForm({
+    defaultValues: {
+      description: "",
+      video: "",
+      word: (wordid as string) || "",
+    },
   });
   const [selectedWord, setSelectedWord] = useState<
     | {
@@ -50,57 +64,92 @@ const CreateWordPage = () => {
   const { data: signVideoData, mutate: signVideoMutation } =
     api.sign.createSignVideo.useMutation();
 
-  const createSign = () => {
-    if (!signVideoData?.id) {
+  const createSign = (values: {
+    description: string;
+    video: string;
+    word: string;
+  }) => {
+    if (!values.video) {
       throw new Error("No sign video id");
     }
     if (!user?.id) {
       throw new Error("No user id");
     }
-    if (!signDescription) {
+    if (!values.description) {
       throw new Error("No sign description");
     }
-    if (!selectedWord?.id) {
+    if (!values.word) {
       throw new Error("No selected word id");
     }
+    console.log("Sign Video Data: ", signVideoData);
     signCreateMutation({
-      videoId: signVideoData.id,
+      videoId: values.video,
       createdBy: user?.id,
-      wordId: selectedWord?.id,
-      signDescription: signDescription,
+      wordId: values.word,
+      signDescription: values.description,
     });
   };
+
+  console.log(errors);
+
   return (
     <PageLayout>
       <div className="w-full px-4">
         <h1 className="text-2xl">Create a Sign</h1>
         <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            createSign();
-          }}
+          // eslint-disable-next-line @typescript-eslint/no-misused-promises
+          onSubmit={handleSubmit(createSign)}
+          // onSubmit={(e) => {
+          //   e.preventDefault();
+          //   createSign();
+          // }}
         >
-          <VideoRecorder />
           <div className="flex w-1/2 flex-col gap-3">
-            <WordSelector
-              selected={selectedWord}
-              setSelected={setSelectedWord}
+            <Controller
+              name="word"
+              control={control}
+              rules={{ required: "Please select a word" }}
+              render={({ field }) => (
+                <WordSelector
+                  {...field}
+                  selected={selectedWord}
+                  setSelected={setSelectedWord}
+                />
+              )}
             />
             <textarea
+              {...register("description", {
+                required: "Please fill out a description",
+              })}
               style={{ resize: "none" }}
-              className="rounded-lg  p-2 shadow-[0_0_0_1.5px_rgb(255,255,255)] outline-none focus:shadow-[0_0_0_1.5px_rgb(168,85,247)]"
+              className="rounded-lg border border-purple-200  p-2 shadow-[0_0_0_1.5px_rgb(255,255,255)] outline-none focus:shadow-[0_0_0_1.5px_rgb(168,85,247)]"
               placeholder="Sign description ie: Dominant hand slaps the thigh, then the fingers snap."
               rows={5}
               name="description"
-              onChange={(e) => setSignDescription(e.target.value)}
-              value={signDescription}
-            ></textarea>
-            <h3 className="text-xl font-semibold">Sign Video</h3>
+            />
+            <p className="text-red-500">{errors.description?.message}</p>
+            <div className="flex justify-between">
+              <h3 className="text-xl font-semibold">Sign Video</h3>
+              <button
+                className="relative w-32 border text-sm text-gray-500"
+                onClick={() => {
+                  videoSource === "record"
+                    ? setVideoSource("upload")
+                    : setVideoSource("record");
+                }}
+              >
+                {videoSource === "record" ? "Upload" : "Record"}
+                {videoSource === "upload" && (
+                  <em className=" absolute -bottom-2 right-0 text-xs">beta</em>
+                )}
+              </button>
+            </div>
             {videoUrl ? (
               <video src={videoUrl} controls loop />
-            ) : (
+            ) : videoSource === "upload" ? (
               <>
                 <UploadDropzone<OurFileRouter>
+                  // {...register("video", { required: "Please upload a video" })}
                   endpoint="videoUploader"
                   onClientUploadComplete={(res) => {
                     // Do something with the response
@@ -117,10 +166,13 @@ const CreateWordPage = () => {
                     }
                   }}
                   onUploadError={(error: Error) => {
-                    alert(`ERROR! ${error.message}`);
+                    toast.error(error.message);
                   }}
                 />
+                <p className="text-red-500">{errors.video?.message}</p>
               </>
+            ) : (
+              <VideoRecorder onVideoUpload={setVideoUrl} />
             )}
           </div>
           <button
