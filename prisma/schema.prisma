@@ -12,6 +12,11 @@ datasource db {
   relationMode = "prisma"
 }
 
+model User {
+  id    String @id @default(cuid())
+  votes Vote[]
+}
+
 model Word {
   id        String   @id @default(cuid())
   createdAt DateTime @default(now())
@@ -26,6 +31,16 @@ model Word {
   Signs         Sign[]
 
   @@fulltext([word])
+}
+
+model WordImage {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String
+  url       String
+  word      Word?    @relation(fields: [wordId], references: [id])
+  wordId    String?  @unique
 }
 
 model Sign {
@@ -48,11 +63,11 @@ model SignVideo {
   updatedAt DateTime @updatedAt
   createdBy String
 
-  upvotes   Int?    @default(0)
-  downvotes Int?    @default(0)
-  url       String
-  Sign      Sign?   @relation(fields: [signId], references: [id])
-  signId    String?
+  score  Int?    @default(0)
+  url    String
+  sign   Sign?   @relation(fields: [signId], references: [id])
+  signId String?
+  votes  Vote[]
 
   @@index([signId])
 }
@@ -69,12 +84,15 @@ model SignImage {
   @@index([signId])
 }
 
-model WordImage {
-  id        String   @id @default(cuid())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  createdBy String
-  url       String
-  Word      Word?    @relation(fields: [wordId], references: [id])
-  wordId    String?  @unique
+model Vote {
+  id    String @id @default(uuid())
+  value Int // this can be either 1 (upvote) or -1 (downvote)
+
+  // Relation to User
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  // Relation to Sign
+  signVideoId String
+  signVideo   SignVideo @relation(fields: [signVideoId], references: [id])
 }

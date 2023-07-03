@@ -8,6 +8,14 @@ export const signRouter = createTRPCRouter({
       include: { word: { include: { images: true } } },
     });
   }),
+  getSignWithVideoAndVotes: publicProcedure
+    .input(z.object({ id: z.string() }))
+    .query(({ ctx, input }) => {
+      return ctx.prisma.sign.findUnique({
+        where: { id: input.id },
+        include: { videos: true },
+      });
+    }),
   getOptionSigns: publicProcedure
     .input(z.object({ word: z.string() }))
     .query(({ ctx, input }) => {
@@ -41,8 +49,6 @@ export const signRouter = createTRPCRouter({
       const signVideo = await ctx.prisma.signVideo.create({
         data: {
           url: input.url,
-          upvotes: 0,
-          downvotes: 0,
           createdBy: input.createdBy,
         },
       });
@@ -71,9 +77,13 @@ export const signRouter = createTRPCRouter({
           videos: {
             create: {
               url: input.videoUrl,
-              upvotes: 0,
-              downvotes: 0,
               createdBy: input.createdBy,
+              votes: {
+                create: {
+                  value: 1,
+                  user: { connect: { id: input.createdBy } },
+                },
+              },
             },
           },
           word: {

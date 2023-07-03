@@ -13,7 +13,10 @@ export const wordRouter = createTRPCRouter({
     .query(async ({ input, ctx }) => {
       const sign = await ctx.prisma.word.findUnique({
         where: { id: input.id },
-        include: { images: true, Signs: { include: { videos: true } } },
+        include: {
+          images: true,
+          Signs: { include: { videos: true } },
+        },
       });
       if (!sign) {
         throw new TRPCError({ code: "NOT_FOUND", message: "Word Not Found" });
