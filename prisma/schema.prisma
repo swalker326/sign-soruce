@@ -28,7 +28,7 @@ model Word {
   example       String?
   pronunciation String
   images        WordImage[]
-  Signs         Sign[]
+  signs         Sign[]
 
   @@fulltext([word])
 }
@@ -44,30 +44,30 @@ model WordImage {
 }
 
 model Sign {
-  id        String   @id @default(cuid())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  createdBy String
-
-  word            Word        @relation(fields: [wordId], references: [id])
-  wordId          String
+  id              String   @id @default(cuid())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  createdBy       String
   signDescription String?
-  videos          SignVideo[]
+
+  word   Word   @relation(fields: [wordId], references: [id])
+  wordId String
+  video  Video?
 
   @@fulltext([wordId])
 }
 
-model SignVideo {
+model Video {
   id        String   @id @default(cuid())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   createdBy String
 
-  score  Int?    @default(0)
+  score  Int?   @default(0)
   url    String
-  sign   Sign?   @relation(fields: [signId], references: [id])
-  signId String?
   votes  Vote[]
+  sign   Sign?  @relation(fields: [signId], references: [id])
+  signId String @unique
 
   @@index([signId])
 }
@@ -94,5 +94,8 @@ model Vote {
 
   // Relation to Sign
   signVideoId String
-  signVideo   SignVideo @relation(fields: [signVideoId], references: [id])
+  video       Video  @relation(fields: [signVideoId], references: [id])
+
+  @@index([userId])
+  @@index([signVideoId])
 }

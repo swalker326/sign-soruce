@@ -9,7 +9,7 @@ import {
 export const wordRouter = createTRPCRouter({
   getAll: publicProcedure.query(({ ctx }) => {
     return ctx.prisma.word.findMany({
-      include: { Signs: { include: { videos: true } } },
+      include: { signs: { include: { video: true } } },
     });
   }),
   getWordById: publicProcedure
@@ -19,7 +19,7 @@ export const wordRouter = createTRPCRouter({
         where: { id: input.id },
         include: {
           images: true,
-          Signs: { include: { videos: true } },
+          signs: { include: { video: true } },
         },
       });
       if (!sign) {

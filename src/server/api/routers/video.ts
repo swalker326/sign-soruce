@@ -6,7 +6,7 @@ export const videoRouter = createTRPCRouter({
   getVideoVotes: publicProcedure
     .input(z.object({ id: z.string() }))
     .query(({ ctx, input }) => {
-      return ctx.prisma.signVideo.findFirst({
+      return ctx.prisma.video.findFirst({
         where: { id: input.id },
         include: { votes: true },
       });
@@ -29,18 +29,18 @@ export const videoRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const signVideo = await ctx.prisma.signVideo.create({
+      const video = await ctx.prisma.video.create({
         data: {
           url: input.url,
           createdBy: input.createdBy,
         },
       });
-      if (!signVideo) {
+      if (!video) {
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: "Failed creating Sign Video",
         });
       }
-      return { id: signVideo.id };
+      return { id: video.id };
     }),
 });

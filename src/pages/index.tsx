@@ -13,7 +13,7 @@ import {
 import { MoreHorizontalIcon } from "lucide-react";
 
 const wordWithSigns = Prisma.validator<Prisma.WordArgs>()({
-  include: { Signs: { include: { videos: true } } },
+  include: { signs: { include: { video: true } } },
 });
 
 type WordWithSign = Prisma.WordGetPayload<typeof wordWithSigns>;
@@ -28,8 +28,8 @@ function WordCard({ word }: { word: WordWithSign }) {
         </CardHeader>
         <CardContent className="relative">
           <div className="flex flex-col pt-3">
-            {word.Signs.length > 0 ? (
-              <video src={word.Signs[0]?.videos[0]?.url} loop muted autoPlay />
+            {word.signs.length > 0 ? (
+              <video src={word.signs[0]?.video?.url} loop muted autoPlay />
             ) : (
               <p>{word.definition}</p>
             )}

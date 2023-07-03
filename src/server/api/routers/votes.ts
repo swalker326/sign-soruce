@@ -15,7 +15,7 @@ export const voteRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const vote = await ctx.prisma.vote.create({
         data: {
-          signVideo: { connect: { id: input.videoId } },
+          video: { connect: { id: input.videoId } },
           user: { connect: { id: input.createdBy } },
           value: input.vote,
         },
@@ -46,18 +46,18 @@ export const voteRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const signVideo = await ctx.prisma.signVideo.create({
+      const video = await ctx.prisma.video.create({
         data: {
           url: input.url,
           createdBy: input.createdBy,
         },
       });
-      if (!signVideo) {
+      if (!video) {
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: "Failed creating Sign Video",
         });
       }
-      return { id: signVideo.id };
+      return { id: video.id };
     }),
 });

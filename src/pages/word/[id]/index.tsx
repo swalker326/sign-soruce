@@ -25,7 +25,7 @@ import { Button } from "~/components/ui/button";
 import { getAuth } from "@clerk/nextjs/server";
 
 const signWithVideoAndWord = Prisma.validator<Prisma.SignArgs>()({
-  include: { videos: true },
+  include: { video: true },
 });
 
 type SignWordVideos = Prisma.SignGetPayload<typeof signWithVideoAndWord>;
@@ -37,41 +37,30 @@ const SignVideos = ({ sign }: { sign: SignWordVideos }) => {
   console.log(data);
   return (
     <div className="flex-1 flex-col rounded-lg bg-transparent">
-      {sign.videos.map((video) => {
-        // const [upvotes, downvotes] = video.reduce((acc: number[], curr) => {
-        //   if (curr.value === 1) {
-        //     return [acc[0] || 0 + 1, acc[1] || 0];
-        //   }
-        //   return [acc[0] || 0, acc[1] || 0 + 1];
-        // }, []);
-        // console.log(downvotes, upvotes);
-        return (
-          <Card key={video.id}>
-            <CardHeader className="bg-gray-100">
-              <div className="flex items-center justify-between px-20">
-                <Button
-                  variant="outline"
-                  onClick={() => console.log("cast up vote")}
-                >
-                  <ArrowBigUp className="h-6 w-6 text-purple-500" />
-                </Button>
-                <CardTitle>{23}</CardTitle>
-                <Button
-                  variant="link"
-                  onClick={() => console.log("cast down vote")}
-                >
-                  <ArrowBigDown className="h-6 w-6 text-red-500" />
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent className="relative">
-              <div className="flex flex-col pt-3">
-                <video src={video?.url} loop muted autoPlay />
-              </div>
-            </CardContent>
-          </Card>
-        );
-      })}
+      <Card>
+        <CardHeader className="bg-gray-100">
+          <div className="flex items-center justify-between px-20">
+            <Button
+              variant="outline"
+              onClick={() => console.log("cast up vote")}
+            >
+              <ArrowBigUp className="h-6 w-6 text-purple-500" />
+            </Button>
+            <CardTitle>{23}</CardTitle>
+            <Button
+              variant="link"
+              onClick={() => console.log("cast down vote")}
+            >
+              <ArrowBigDown className="h-6 w-6 text-red-500" />
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent className="relative">
+          <div className="flex flex-col pt-3">
+            <video src={sign.video?.url} loop muted autoPlay />
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };
@@ -194,7 +183,7 @@ const SignPage: NextPage<{ wordId: string }> = ({ wordId }) => {
               </CardContent>
             </Card>
             {/* <div className="mb-3 flex w-full flex-wrap space-x-1"> */}
-            {[...data.Signs, ...data.Signs].map((sign) => (
+            {[...data.signs, ...data.signs].map((sign) => (
               <SignVideos key={sign.id} sign={sign} />
             ))}
             {/* </div> */}

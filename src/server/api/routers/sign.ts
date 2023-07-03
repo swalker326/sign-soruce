@@ -17,7 +17,7 @@ export const signRouter = createTRPCRouter({
     .query(({ ctx, input }) => {
       return ctx.prisma.sign.findUnique({
         where: { id: input.id },
-        include: { videos: true },
+        include: { video: true },
       });
     }),
   getOptionSigns: publicProcedure
@@ -34,7 +34,7 @@ export const signRouter = createTRPCRouter({
     .query(async ({ input, ctx }) => {
       const sign = await ctx.prisma.sign.findUnique({
         where: { id: input.id },
-        include: { word: true, videos: true },
+        include: { word: true, video: true },
       });
       if (!sign) {
         throw new TRPCError({ code: "NOT_FOUND", message: "Sign not found" });
@@ -50,19 +50,19 @@ export const signRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const signVideo = await ctx.prisma.signVideo.create({
+      const video = await ctx.prisma.video.create({
         data: {
           url: input.url,
           createdBy: input.createdBy,
         },
       });
-      if (!signVideo) {
+      if (!video) {
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: "Failed creating Sign Video",
         });
       }
-      return { id: signVideo.id };
+      return { id: video.id };
     }),
   create: privateProdedure
     .input(
@@ -78,7 +78,7 @@ export const signRouter = createTRPCRouter({
         data: {
           createdBy: input.createdBy,
           signDescription: input.signDescription || "",
-          videos: {
+          video: {
             create: {
               url: input.videoUrl,
               createdBy: input.createdBy,
