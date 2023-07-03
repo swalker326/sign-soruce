@@ -1,6 +1,10 @@
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
+import {
+  createTRPCRouter,
+  privateProdedure,
+  publicProcedure,
+} from "~/server/api/trpc";
 
 export const wordRouter = createTRPCRouter({
   getAll: publicProcedure.query(({ ctx }) => {
@@ -31,7 +35,7 @@ export const wordRouter = createTRPCRouter({
         where: { word: { startsWith: word } },
       });
     }),
-  addWordImage: publicProcedure
+  addWordImage: privateProdedure
     .input(
       z.object({ wordId: z.string(), createdBy: z.string(), url: z.string() })
     )

@@ -12,7 +12,7 @@ function MyApp({ Component, pageProps }: AppProps) {
         <title>Sign Source</title>
         <meta
           name="description"
-          content="Sign Source is an open soruce/crowd source ASL dictionary"
+          content="Sign Source is an open soruce/crowd source ASL dictionary for all"
         />
       </Head>
       <Toaster />

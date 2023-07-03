@@ -1,6 +1,10 @@
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
+import {
+  createTRPCRouter,
+  privateProdedure,
+  publicProcedure,
+} from "~/server/api/trpc";
 
 export const signRouter = createTRPCRouter({
   getSigns: publicProcedure.query(({ ctx }) => {
@@ -60,7 +64,7 @@ export const signRouter = createTRPCRouter({
       }
       return { id: signVideo.id };
     }),
-  create: publicProcedure
+  create: privateProdedure
     .input(
       z.object({
         wordId: z.string(),
