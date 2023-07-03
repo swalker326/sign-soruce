@@ -1,4 +1,4 @@
-import type { GetServerSideProps, GetStaticProps, NextPage } from "next";
+import type { GetServerSideProps, NextPage } from "next";
 import Head from "next/head";
 import { api } from "~/utils/api";
 import { PageLayout } from "~/components/layout";
@@ -22,10 +22,9 @@ import {
 import { Prisma } from "@prisma/client";
 import { ArrowBigDown, ArrowBigUp } from "lucide-react";
 import { Button } from "~/components/ui/button";
-import { getAuth } from "@clerk/nextjs/server";
 
 const signWithVideoAndWord = Prisma.validator<Prisma.SignArgs>()({
-  include: { video: true },
+  include: { video: { include: { votes: true } } },
 });
 
 type SignWordVideos = Prisma.SignGetPayload<typeof signWithVideoAndWord>;
@@ -34,7 +33,18 @@ const SignVideos = ({ sign }: { sign: SignWordVideos }) => {
   const { data } = api.sign.getSignWithVideoAndVotes.useQuery({
     id: sign.id,
   });
-  console.log(data);
+  const [up, down] = data?.video?.votes?.reduce(
+    (acc, vote) => {
+      if (vote.value === -1) {
+        return [acc[0], acc[1] + 1];
+      } else if (vote.value === 1) {
+        return [acc[0] + 1, acc[1] || 0];
+      }
+      return acc;
+    },
+    [0, 0]
+  ) || [0, 0];
+  console.log("up", up, "down", down);
   return (
     <div className="flex-1 flex-col rounded-lg bg-transparent">
       <Card>
@@ -46,7 +56,7 @@ const SignVideos = ({ sign }: { sign: SignWordVideos }) => {
             >
               <ArrowBigUp className="h-6 w-6 text-purple-500" />
             </Button>
-            <CardTitle>{23}</CardTitle>
+            <CardTitle>{up + down}</CardTitle>
             <Button
               variant="link"
               onClick={() => console.log("cast down vote")}

@@ -19,7 +19,7 @@ export const wordRouter = createTRPCRouter({
         where: { id: input.id },
         include: {
           images: true,
-          signs: { include: { video: true } },
+          signs: { include: { video: { include: { votes: true } } } },
         },
       });
       if (!sign) {

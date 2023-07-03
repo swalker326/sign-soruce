@@ -17,7 +17,7 @@ export const signRouter = createTRPCRouter({
     .query(({ ctx, input }) => {
       return ctx.prisma.sign.findUnique({
         where: { id: input.id },
-        include: { video: true },
+        include: { video: { include: { votes: true } } },
       });
     }),
   getOptionSigns: publicProcedure
