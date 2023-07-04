@@ -10,7 +10,7 @@ import {
 } from "@heroicons/react/20/solid";
 import Link from "next/link";
 import { Menu, Transition } from "@headlessui/react";
-import { Fragment } from "react";
+import { Fragment, useMemo } from "react";
 import Image from "next/image";
 import {
   Card,
@@ -22,6 +22,8 @@ import {
 import { Prisma } from "@prisma/client";
 import { ArrowBigDown, ArrowBigUp } from "lucide-react";
 import { Button } from "~/components/ui/button";
+import { useAuth } from "@clerk/nextjs";
+import { cn } from "~/lib/utils";
 
 const signWithVideoAndWord = Prisma.validator<Prisma.SignArgs>()({
   include: { video: { include: { votes: true } } },
@@ -29,42 +31,70 @@ const signWithVideoAndWord = Prisma.validator<Prisma.SignArgs>()({
 
 type SignWordVideos = Prisma.SignGetPayload<typeof signWithVideoAndWord>;
 
-const SignVideos = ({ sign }: { sign: SignWordVideos }) => {
-  const { data } = api.sign.getSignWithVideoAndVotes.useQuery({
-    id: sign.id,
-  });
-  const [up, down] = data?.video?.votes?.reduce(
-    (acc, vote) => {
-      if (vote.value === -1) {
-        return [acc[0], acc[1] + 1];
-      } else if (vote.value === 1) {
-        return [acc[0] + 1, acc[1] || 0];
-      }
-      return acc;
+const SignVideoCard = ({ sign }: { sign: SignWordVideos }) => {
+  const ctx = api.useContext();
+  const userId = useAuth().userId;
+  const userVoted = userId
+    ? sign.video?.votes?.find((vote) => vote.userId === userId)
+    : false;
+  const { mutate } = api.video.vote.useMutation({
+    onSuccess: async () => {
+      await ctx.word.getWordById.refetch();
     },
-    [0, 0]
-  ) || [0, 0];
-  console.log("up", up, "down", down);
+  });
+  const [up, down] = useMemo(() => {
+    return (
+      sign?.video?.votes?.reduce(
+        (acc, vote) => {
+          if (vote.value === -1) {
+            return [acc[0], acc[1] + -1];
+          } else if (vote.value === 1) {
+            return [acc[0] + 1, acc[1] || 0];
+          }
+          return acc;
+        },
+        [0, 0]
+      ) || [0, 0]
+    );
+  }, [sign]);
+
+  const scoreString = useMemo(() => {
+    const score = up + down;
+    if (score === 0) {
+      return "0";
+    }
+    return score > 0 ? `+${score}` : `${score}`;
+  }, [up, down]);
   return (
     <div className="flex-1 flex-col rounded-lg bg-transparent">
       <Card>
-        <CardHeader className="bg-gray-100">
-          <div className="flex items-center justify-between px-20">
+        <div className="relative">
+          <div className=" absolute left-5 top-5 z-30 flex items-center space-x-4 ">
             <Button
               variant="outline"
-              onClick={() => console.log("cast up vote")}
+              onClick={() => mutate({ videoId: sign.video?.id || "", vote: 1 })}
+              className={cn(
+                userVoted && userVoted.value === 1 && "bg-purple-300",
+                "hover:bg-purple-300"
+              )}
             >
               <ArrowBigUp className="h-6 w-6 text-purple-500" />
             </Button>
-            <CardTitle>{up + down}</CardTitle>
+            <CardTitle>{scoreString}</CardTitle>
             <Button
-              variant="link"
-              onClick={() => console.log("cast down vote")}
+              variant="outline"
+              className={cn(
+                userVoted && userVoted.value === -1 && "bg-red-300",
+                " hover:bg-red-300"
+              )}
+              onClick={() =>
+                mutate({ videoId: sign.video?.id || "", vote: -1 })
+              }
             >
               <ArrowBigDown className="h-6 w-6 text-red-500" />
             </Button>
           </div>
-        </CardHeader>
+        </div>
         <CardContent className="relative">
           <div className="flex flex-col pt-3">
             <video src={sign.video?.url} loop muted autoPlay />
@@ -192,11 +222,11 @@ const SignPage: NextPage<{ wordId: string }> = ({ wordId }) => {
                 </div>
               </CardContent>
             </Card>
-            {/* <div className="mb-3 flex w-full flex-wrap space-x-1"> */}
-            {[...data.signs, ...data.signs].map((sign) => (
-              <SignVideos key={sign.id} sign={sign} />
-            ))}
-            {/* </div> */}
+            <div className="mb-3 flex w-full flex-wrap space-x-1">
+              {data.signs.map((sign) => (
+                <SignVideoCard key={sign.id} sign={sign} />
+              ))}
+            </div>
           </div>
         )}
       </PageLayout>
