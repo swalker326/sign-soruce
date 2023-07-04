@@ -50,11 +50,16 @@ export const videoRouter = createTRPCRouter({
         },
       });
       if (existingVote) {
-        await ctx.prisma.vote.update({
-          where: { id: existingVote.id },
-          data: { value: input.vote },
-        });
-        return { id: existingVote.id };
+        if (existingVote.value === input.vote) {
+          await ctx.prisma.vote.delete({ where: { id: existingVote.id } });
+          return { id: existingVote.id };
+        } else {
+          await ctx.prisma.vote.update({
+            where: { id: existingVote.id },
+            data: { value: input.vote },
+          });
+          return { id: existingVote.id };
+        }
       }
       const vote = await ctx.prisma.vote.create({
         data: {
