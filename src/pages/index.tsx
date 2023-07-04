@@ -29,7 +29,7 @@ function WordCard({ word }: { word: WordWithSign }) {
         <CardContent className="relative">
           <div className="flex flex-col pt-3">
             {word.signs.length > 0 ? (
-              <video src={word.signs[0]?.video?.url} loop muted autoPlay />
+              <video playsInline src={word.signs[0]?.video?.url} loop muted autoPlay />
             ) : (
               <p>{word.definition}</p>
             )}

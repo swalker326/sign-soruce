@@ -97,7 +97,7 @@ const SignVideoCard = ({ sign }: { sign: SignWordVideos }) => {
         </div>
         <CardContent className="relative">
           <div className="flex flex-col pt-3">
-            <video src={sign.video?.url} loop muted autoPlay />
+            <video playsInline src={sign.video?.url} loop muted autoPlay />
           </div>
         </CardContent>
       </Card>
