@@ -106,11 +106,9 @@ const SignVideoCard = ({ sign }: { sign: SignWordVideos }) => {
 };
 
 const SignPage: NextPage<{ wordId: string }> = ({ wordId }) => {
-  console.log("wordId", wordId);
   const { data } = api.word.getWordById.useQuery({
     id: wordId,
   });
-
   if (!data) {
     return <div>Word not found</div>;
   }
@@ -222,10 +220,29 @@ const SignPage: NextPage<{ wordId: string }> = ({ wordId }) => {
                 </div>
               </CardContent>
             </Card>
-            <div className="columns-1 md:columns-2 gap-x-2">
-              {[...data.signs, ...data.signs].map((sign) => (
-                <SignVideoCard key={sign.id} sign={sign} />
-              ))}
+            <div className="columns-1 gap-x-2 md:columns-2">
+              {data.signs
+                .sort((a, b) => {
+                  const aScore =
+                    a.video?.votes?.reduce((acc, vote) => {
+                      if (vote.value === -1) {
+                        return acc - 1;
+                      }
+                      return acc + 1;
+                    }, 0) || 0;
+                  const bScore =
+                    b.video?.votes?.reduce((acc, vote) => {
+                      if (vote.value === -1) {
+                        return acc - 1;
+                      }
+                      return acc + 1;
+                    }, 0) || 0;
+                  console.log(aScore, bScore);
+                  return bScore - aScore;
+                })
+                .map((sign) => (
+                  <SignVideoCard key={sign.id} sign={sign} />
+                ))}
             </div>
           </div>
         )}
