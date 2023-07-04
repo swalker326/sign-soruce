@@ -66,7 +66,7 @@ const SignVideoCard = ({ sign }: { sign: SignWordVideos }) => {
     return score > 0 ? `+${score}` : `${score}`;
   }, [up, down]);
   return (
-    <div className="flex-1 flex-col rounded-lg bg-transparent">
+    <div className="mb-2 w-full rounded-lg bg-transparent">
       <Card>
         <div className="relative">
           <div className=" absolute left-5 top-5 z-30 flex items-center space-x-4 ">
@@ -126,8 +126,8 @@ const SignPage: NextPage<{ wordId: string }> = ({ wordId }) => {
       <PageLayout>
         {data && (
           <div className="flex flex-col gap-3">
-            <Card>
-              <CardHeader className="bg-purple-300">
+            <Card className="rounded-lg">
+              <CardHeader className="rounded-t-lg bg-purple-300">
                 <div className="flex justify-between">
                   <CardTitle>{data.word}</CardTitle>
                   <Menu as="div" className="relative inline-block text-left">
@@ -222,8 +222,8 @@ const SignPage: NextPage<{ wordId: string }> = ({ wordId }) => {
                 </div>
               </CardContent>
             </Card>
-            <div className="mb-3 flex w-full flex-wrap space-x-1">
-              {data.signs.map((sign) => (
+            <div className="columns-1 md:columns-2 gap-x-2">
+              {[...data.signs, ...data.signs].map((sign) => (
                 <SignVideoCard key={sign.id} sign={sign} />
               ))}
             </div>
