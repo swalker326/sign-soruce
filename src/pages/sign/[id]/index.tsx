@@ -56,8 +56,8 @@ import { PageLayout } from "~/components/layout";
 //   };
 // };
 
-export const getStaticPaths = () => {
-  return { paths: [], fallback: "blocking" };
-};
+// export const getStaticPaths = () => {
+//   return { paths: [], fallback: "blocking" };
+// };
 
 export default SignPage;
