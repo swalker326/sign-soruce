@@ -88,10 +88,6 @@ const CreateWordPage = () => {
         <form
           // eslint-disable-next-line @typescript-eslint/no-misused-promises
           onSubmit={handleSubmit(createSign)}
-          // onSubmit={(e) => {
-          //   e.preventDefault();
-          //   createSign();
-          // }}
         >
           <div className="flex w-1/2 flex-col gap-3">
             <Controller
@@ -153,10 +149,6 @@ const CreateWordPage = () => {
                           if (!videoUrl || !user?.id) {
                             throw new Error("No video url");
                           }
-                          // signVideoMutation({
-                          //   url: videoUrl,
-                          //   createdBy: user?.id,
-                          // });
                           setVideoUrl(videoUrl);
                           field.onChange(videoUrl);
                         }
