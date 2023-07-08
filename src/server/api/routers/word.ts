@@ -39,14 +39,21 @@ export const wordRouter = createTRPCRouter({
     .input(
       z.object({ wordId: z.string(), createdBy: z.string(), url: z.string() })
     )
-    .mutation(({ ctx, input }) => {
+    .mutation(async ({ ctx, input }) => {
       const { wordId, createdBy, url } = input;
-      return ctx.prisma.wordImage.create({
+      const image = await ctx.prisma.wordImage.create({
         data: {
           url,
           createdBy,
-          wordId,
+          word: { connect: { id: wordId } },
         },
       });
+      if (!image) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Failed creating Word Image",
+        });
+      }
+      return image;
     }),
 });
