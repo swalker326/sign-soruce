@@ -13,8 +13,9 @@ datasource db {
 }
 
 model User {
-  id    String @id @default(cuid())
+  id    String  @id @default(cuid())
   votes Vote[]
+  admin Boolean @default(false)
 }
 
 model Word {
